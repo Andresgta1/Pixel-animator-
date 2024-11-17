@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cubo con flechas para mover</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <script>
+        let scene, camera, renderer, cube, arrowX, arrowY, arrowZ;
+
+        function init() {
+            // Crear la escena
+            scene = new THREE.Scene();
+
+            // Crear la cámara
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            // Crear el renderizador
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Crear el cubo
+            const geometry = new THREE.BoxGeometry();
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
+
+            // Crear las flechas
+            const arrowLength = 2;
+            arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), cube.position, arrowLength, 0xffff00); // Flecha amarilla (X)
+            arrowY = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), cube.position, arrowLength, 0xff0000); // Flecha roja (Y)
+            arrowZ = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), cube.position, arrowLength, 0x0000ff); // Flecha azul (Z)
+            scene.add(arrowX, arrowY, arrowZ);
+
+            // Hacer que las flechas no se vean al principio
+            arrowX.visible = arrowY.visible = arrowZ.visible = false;
+
+            // Añadir evento de clic
+            window.addEventListener('click', onClick, false);
+
+            animate();
+        }
+
+        function onClick(event) {
+            // Convertir las coordenadas del clic a las coordenadas de la escena
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+            // Crear un rayo para detectar la intersección con el cubo
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouse, camera);
+
+            const intersects = raycaster.intersectObject(cube);
+
+            if (intersects.length > 0) {
+                // Si el clic es sobre el cubo, mostrar las flechas
+                arrowX.visible = arrowY.visible = arrowZ.visible = true;
+            }
+        }
+
+        // Función de animación
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotar el cubo
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
+
+            // Renderizar la escena
+            renderer.render(scene, camera);
+        }
+
+        init();
+    </script>
+</body>
+</html>
